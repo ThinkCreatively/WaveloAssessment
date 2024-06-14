@@ -40,8 +40,6 @@ const getImageAndTitle = async () => {
           // Add a dog object to items to rendered later
           items.value.push({ name: title.value, url: imageUrl.value, description: description })
         }
-
-        console.log(items.value)
       })
   } catch (err) {
     console.log('this is the error for image get: ', err)
