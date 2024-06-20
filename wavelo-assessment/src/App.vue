@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { ref, watchEffect, type Ref } from 'vue'
 import { useLoremIpsumStore } from './stores/loremIpsum'
 
 // Refs
-let items = ref([])
+let items: Ref<{ name: string; url: string; description: string }[]> = ref([])
 let imageUrl = ref('')
 let title = ref('')
+let amountSelected = ref(0)
+let questionAmount = ref(0)
 
 // store methods from pinia
 const { getLoremIpsumInRange } = useLoremIpsumStore()
@@ -13,11 +15,12 @@ const { getLoremIpsumInRange } = useLoremIpsumStore()
 // Fetchs data from url given from challenge description, will assign ref values
 const getImageAndTitle = async () => {
   try {
-    fetch('https://dog.ceo/api/breeds/image/random/12')
+    // ask for amount of dogs based on amountSelected
+    fetch(`https://dog.ceo/api/breeds/image/random/${amountSelected.value}`)
       .then((res) => res.json())
       .then((data) => {
         // We want 9 different components rendered
-        for (let i = 0; i < 9; i++) {
+        for (let i = 0; i < amountSelected.value; i++) {
           // set imageUrl
           imageUrl.value = data.message[i]
 
@@ -45,26 +48,46 @@ const getImageAndTitle = async () => {
     console.log('this is the error for image get: ', err)
   }
 }
-
-// Run getData on start of page load
-watchEffect(() => getImageAndTitle())
 </script>
 
 <template>
   <header class="outterContainer">
-    <div
-      v-for="(item, index) in items"
-      :key="index"
-      class="mainContainer"
-      style="border: 2px solid white"
-    >
-      <div class="titleSection">{{ item.name }}</div>
-      <div class="imageSection">
-        <img :src="item.url" alt="A Picture of a Dog" class="image" />
+    <div v-if="amountSelected > 0" class="holdingContainer">
+      <div
+        v-for="(item, index) in items"
+        :key="index"
+        class="mainContainer"
+        style="border: 2px solid white"
+      >
+        <div class="titleSection">{{ item.name }}</div>
+        <div class="imageSection">
+          <img :src="item.url" alt="A Picture of a Dog" class="image" />
+        </div>
+        <div class="descriptionSection">{{ item.description }}</div>
+        <div class="linkSection">
+          <a :href="item.url" target="_blank">Here is the link</a>
+        </div>
       </div>
-      <div class="descriptionSection">{{ item.description }}</div>
-      <div class="linkSection">
-        <a :href="item.url" target="_blank">Here is the link</a>
+    </div>
+    <div class="qusetionDiv" v-else>
+      <div>
+        <h1>How many dogs would you like to see?</h1>
+        <div>
+          Amount (1-24):
+          <input v-model="questionAmount" />
+          <div
+            class="confirmButton"
+            @click="
+              (e) => {
+                e.preventDefault()
+                amountSelected = questionAmount
+                getImageAndTitle()
+              }
+            "
+          >
+            Confirm
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -74,6 +97,29 @@ watchEffect(() => getImageAndTitle())
 .outterContainer {
   display: flex;
   padding-right: 10vw;
+}
+
+.qusetionDiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+}
+
+.confirmButton {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  background-color: gray;
+  border-radius: 10px;
+  width: 5vw;
+}
+
+.holdingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .mainContainer {
