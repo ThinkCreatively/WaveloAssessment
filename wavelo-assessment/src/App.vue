@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect, type Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { useLoremIpsumStore } from './stores/loremIpsum'
 
 // Refs
